@@ -1,0 +1,392 @@
+{
+  "info": {
+    "name": "BarRestaurante API",
+    "_postman_id": "8b0f6e12-2a44-4d8f-a4f0-c0f5b6a4f9b1",
+    "description": "Collection para testes da API de Bar/Restaurante (Express + Prisma)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bar.com\",\n  \"senha\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Create Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Administrador\",\n  \"email\": \"admin@bar.com\",\n  \"senha\": \"123456\",\n  \"cpf\": \"12345678900\",\n  \"celular\": \"11999999999\",\n  \"turno\": \"NOITE\",\n  \"roles\": [\"ADMIN\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Usuario By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/{{usuarioId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "{{usuarioId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Administrador Atualizado\",\n  \"turno\": \"TARDE\",\n  \"roles\": [\"ADMIN\", \"GARCOM\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/{{usuarioId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "{{usuarioId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/{{usuarioId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "{{usuarioId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Mesas",
+      "item": [
+        {
+          "name": "Create Mesa",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": 1,\n  \"capacidade\": 4,\n  \"codigo_mesa\": 1001\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mesas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "mesas"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Mesas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mesas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "mesas"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Abrir Mesa",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mesas/{{mesaId}}/abrir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "mesas", "{{mesaId}}", "abrir"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Fechar Mesa",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mesas/{{mesaId}}/fechar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "mesas", "{{mesaId}}", "fechar"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Produtos",
+      "item": [
+        {
+          "name": "Create Produto",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Hamburguer\",\n  \"preco_unitario\": 35.9,\n  \"qtd_estoque\": 100\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/produtos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "produtos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Produtos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/produtos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "produtos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Produto",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/produtos/{{produtoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "produtos", "{{produtoId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fornecedores",
+      "item": [
+        {
+          "name": "Create Fornecedor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razao_social\": \"Fornecedor LTDA\",\n  \"cnpj\": \"12345678000199\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/fornecedores",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "fornecedores"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Fornecedores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/fornecedores",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "fornecedores"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pedidos",
+      "item": [
+        {
+          "name": "Create Pedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mesa_id\": \"{{mesaId}}\",\n  \"num_pedido\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pedidos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Item Pedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produto_id\": \"{{produtoId}}\",\n  \"quantidade\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pedidos/{{pedidoId}}/itens",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pedidos", "{{pedidoId}}", "itens"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Status Pedido",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status_preparo\": \"EM_PREPARO\",\n  \"status_pagamento\": \"ABERTO\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pedidos/{{pedidoId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pedidos", "{{pedidoId}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar Pedido",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pedidos/{{pedidoId}}/cancelar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pedidos", "{{pedidoId}}", "cancelar"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "bearerToken", "value": "" },
+    { "key": "usuarioId", "value": "" },
+    { "key": "mesaId", "value": "" },
+    { "key": "produtoId", "value": "" },
+    { "key": "fornecedorId", "value": "" },
+    { "key": "pedidoId", "value": "" }
+  ]
+}
