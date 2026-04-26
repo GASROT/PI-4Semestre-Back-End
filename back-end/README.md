@@ -1,98 +1,167 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Back-End - Sistema de Gerenciamento de Mesas
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para gerenciamento de bar/restaurante, desenvolvida com Node.js, Express, Prisma e Supabase (PostgreSQL + Auth).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- Node.js + TypeScript
+- Express 5
+- Prisma ORM
+- Supabase (PostgreSQL e Auth)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Estrutura principal
 
-## Project setup
+- src/main.ts: bootstrap da aplicacao e conexao com banco
+- src/app.ts: middlewares e registro de rotas
+- src/routes/index.ts: hub de rotas API v1
+- src/modules: modulos de dominio (auth, usuarios, mesas, pedidos, produtos, fornecedores)
+- src/repositories: acesso ao banco e operacoes Prisma
+- src/common/pipes: validacao e transformacao de entrada
+- src/common/guards: autenticacao e autorizacao
+- src/interceptors: contexto de request e tempo de resposta
+- prisma/schema.prisma: modelo relacional
+- bruno/BarRestaurante-API.collection.json: collection JSON para importacao em ferramenta de testes
 
-```bash
-$ npm install
-```
+## Fluxo da requisicao
 
-## Compile and run the project
+1. Middleware global: CORS, logging, JSON, contexto de request
+2. Guard: autenticacao por Bearer token
+3. Interceptor: registro de tempo e finalizacao da resposta
+4. Pipe: validacao e transformacao de `body` e `params`
+5. Controller: entrada HTTP
+6. Service: regra de negocio
+7. Repository: acesso ao banco via Prisma
+8. Interceptor de saida: log de duracao e status da resposta
 
-```bash
-# development
-$ npm run start
+## Requisitos
 
-# watch mode
-$ npm run start:dev
+- Node.js 20+
+- npm
+- Projeto Supabase com Postgres habilitado
 
-# production mode
-$ npm run start:prod
-```
+## Configuracao
 
-## Run tests
+1. Instale dependencias:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+2. Crie seu arquivo .env a partir do exemplo:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. Preencha as variaveis no .env:
 
-## Resources
+- DATABASE_URL
+- DIRECT_URL
+- SUPABASE_URL
+- SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- PORT (opcional)
 
-Check out a few resources that may come in handy when working with NestJS:
+## Banco de dados
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Sincronizar schema com o banco:
 
-## Support
+```bash
+npx prisma db push
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Gerar client Prisma:
 
-## Stay in touch
+```bash
+npx prisma generate
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Executar projeto
 
-## License
+Desenvolvimento:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+npm run start:dev
+```
+
+Build:
+
+```bash
+npm run build
+```
+
+Producao:
+
+```bash
+npm run start
+```
+
+## Base URL
+
+```text
+http://localhost:3000/api/v1
+```
+
+## Rotas
+
+Health:
+
+- GET /health
+
+Auth:
+
+- POST /auth/login
+- GET /auth/me
+
+Usuarios:
+
+- POST /usuarios
+- GET /usuarios
+- GET /usuarios/:id
+- PATCH /usuarios/:id
+- DELETE /usuarios/:id
+
+Mesas:
+
+- POST /mesas
+- GET /mesas
+- GET /mesas/:id
+- PATCH /mesas/:id
+- POST /mesas/:id/abrir
+- POST /mesas/:id/fechar
+
+Produtos:
+
+- POST /produtos
+- GET /produtos
+- GET /produtos/:id
+- PATCH /produtos/:id
+- DELETE /produtos/:id
+
+Fornecedores:
+
+- POST /fornecedores
+- GET /fornecedores
+- GET /fornecedores/:id
+- PATCH /fornecedores/:id
+- DELETE /fornecedores/:id
+
+Pedidos:
+
+- POST /pedidos
+- GET /pedidos
+- GET /pedidos/:id
+- POST /pedidos/:id/itens
+- PATCH /pedidos/:id/status
+- PATCH /pedidos/:id/cancelar
+
+## Testes de API
+
+Voce pode importar a collection JSON:
+
+- bruno/BarRestaurante-API.collection.json
+
+## Observacoes
+
+- O endpoint POST /usuarios cria usuario na base da aplicacao e tenta sincronizar no Supabase Auth.
+- O JWT e retornado no endpoint POST /auth/login (campo data.access_token).
