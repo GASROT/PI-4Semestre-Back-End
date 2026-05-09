@@ -1,153 +1,382 @@
-<<<<<<< HEAD
-# Back-End - Sistema de Gerenciamento de Mesas
+# 🍽️ Back-End - Sistema de Gerenciamento de Mesas com QR Code
 
-API REST para gerenciamento de bar/restaurante, desenvolvida com Node.js, Express, Prisma e Supabase (PostgreSQL + Auth).
+API REST completa para gerenciamento de restaurante/bar com autenticação por QR Code, integração ESP32 e gestão de comandas.
 
-## Stack
+## 🏗️ Arquitetura
 
-- Node.js + TypeScript
+**Tecnologias**:
+- Node.js 20+ + TypeScript
 - Express 5
-- Prisma ORM
-- Supabase (PostgreSQL e Auth)
+- Prisma 6.19.3 ORM
+- PostgreSQL via Supabase
+- Supabase Auth
+- Crypto (Tokens seguros)
 
-## Estrutura principal
+---
 
-- src/main.ts: bootstrap da aplicacao e conexao com banco
-- src/app.ts: middlewares e registro de rotas
-- src/routes/index.ts: hub de rotas API v1
-- src/modules: modulos de dominio (auth, usuarios, mesas, pedidos, produtos, fornecedores)
-- prisma/schema.prisma: modelo relacional
-- bruno/BarRestaurante-API.collection.json: collection JSON para importacao em ferramenta de testes
+## 📦 Stack Completo
 
-## Requisitos
+### Backend
+- **Framework**: Express 5 com TypeScript
+- **Banco de Dados**: PostgreSQL (Supabase)
+- **ORM**: Prisma 6.19.3
+- **Autenticação**: Supabase Auth + Tokens JWT personalizados
+- **Validação**: Zod
+- **Hardware**: ESP32 integration
 
-- Node.js 20+
-- npm
-- Projeto Supabase com Postgres habilitado
+### Features Implementadas
+✅ Autenticação JWT com Supabase
+✅ QR Code dinâmico por mesa
+✅ Token baseado em tempo (TTL 360 min)
+✅ Gestão de comandas (Aberta/Finalizada/Cancelada)
+✅ Estrutura de pedidos com itens
+✅ Integração com ESP32/Hardware
+✅ Eventos de auditoria
+✅ Middleware de segurança
 
-## Configuracao
+---
 
-1. Instale dependencias:
+## 📁 Estrutura do Projeto
 
+```
+back-end/
+├── src/
+│   ├── main.ts                    # Entry point
+│   ├── app.ts                     # App setup
+│   ├── config/
+│   │   ├── env.ts                 # Variáveis de ambiente
+│   │   ├── prisma.ts              # Conexão Prisma
+│   │   └── supabase.ts            # Supabase client
+│   ├── modules/
+│   │   ├── auth/                  # Autenticação
+│   │   ├── usuarios/              # Usuários
+│   │   ├── mesas/                 # Mesas + QR Code
+│   │   ├── pedidos/               # Pedidos
+│   │   ├── produtos/              # Produtos
+│   │   ├── fornecedores/          # Fornecedores
+│   │   ├── comandas/              # Comandas (novo)
+│   │   └── hardware/              # ESP32 Integration (novo)
+│   ├── common/
+│   │   ├── guards/                # Middlewares de auth
+│   │   ├── pipes/                 # Validação de dados
+│   │   └── dto/                   # DTOs comuns
+│   ├── routes/
+│   │   └── index.ts               # Hub de rotas
+│   ├── utils/
+│   │   ├── token-generator.ts     # Geração de tokens
+│   │   ├── qrcode-generator.ts    # Geração de QR URLs
+│   │   ├── async-handler.ts       # Wrapper de erro
+│   │   └── http-error.ts          # Classes de erro
+│   └── types/
+│       └── express/               # Tipagem Express
+├── prisma/
+│   ├── schema.prisma              # Modelo de dados
+│   └── migrations/                # Histórico de mudanças
+├── package.json
+├── tsconfig.json
+└── .env.example
+```
+
+---
+
+## 🗄️ Modelos de Dados (Schema Prisma)
+
+### Novo: Comanda
+```prisma
+model Comanda {
+  id           String        @id @default(uuid()) @db.Uuid
+  mesa_id      String        @db.Uuid
+  usuario_id   String?       @db.Uuid
+  status       ComandaStatus @default(ABERTA)
+  total        Float         @default(0)
+  mesa         Mesa          @relation(fields: [mesa_id], references: [id])
+  usuario      Usuario?      @relation(fields: [usuario_id], references: [id])
+  pedidos      Pedido[]
+  criado_em    DateTime      @default(now())
+  finalizado_em DateTime?
+}
+```
+
+### Novo: EventoMesa
+```prisma
+model EventoMesa {
+  id         String    @id @default(uuid()) @db.Uuid
+  mesa_id    String    @db.Uuid
+  tipo       TipoEvento
+  device_id  String?
+  mesa       Mesa      @relation(fields: [mesa_id], references: [id])
+  criado_em  DateTime  @default(now())
+}
+```
+
+### Extended: Mesa
+```prisma
+model Mesa {
+  // ... campos existentes
+  token_acesso  String?       # Token QR de acesso
+  sessao_id     String?       # UUID da sessão
+  device_id     String?       # ID do ESP32
+  eventos       EventoMesa[]  # Auditoria de eventos
+  comandas      Comanda[]     # Histórico de comandas
+  reservas      Reserva[]     # Reservas futuras
+}
+```
+
+### Enums
+```prisma
+enum StatusMesa {
+  DISPONIVEL
+  OCUPADA
+  RESERVADA
+  MANUTENCAO
+}
+
+enum ComandaStatus {
+  ABERTA
+  FINALIZADA
+  CANCELADA
+}
+
+enum TipoEvento {
+  CHAMAR_GARCOM
+  LIMPEZA_INICIADA
+  LIMPEZA_CONCLUIDA
+  MESA_ABERTA
+  MESA_FECHADA
+}
+```
+
+---
+
+## 🚀 Instalação e Configuração
+
+### 1. Clonar e Instalar
 ```bash
+cd back-end
 npm install
 ```
 
-2. Crie seu arquivo .env a partir do exemplo:
-
+### 2. Configurar .env
 ```bash
 cp .env.example .env
 ```
 
-3. Preencha as variaveis no .env:
+Preencha com:
+```env
+# Database
+DATABASE_URL="postgresql://user:pass@host:5432/db"
+DIRECT_URL="postgresql://user:pass@host:5432/db"
 
-- DATABASE_URL
-- DIRECT_URL
-- SUPABASE_URL
-- SUPABASE_ANON_KEY
-- SUPABASE_SERVICE_ROLE_KEY
-- PORT (opcional)
+# Supabase
+SUPABASE_URL="https://xxx.supabase.co"
+SUPABASE_ANON_KEY="eyJ..."
+SUPABASE_SERVICE_ROLE_KEY="eyJ..."
 
-## Banco de dados
+# App
+PORT=3000
+NODE_ENV=development
+```
 
-Sincronizar schema com o banco:
-
+### 3. Sincronizar Banco
 ```bash
 npx prisma db push
 ```
 
-Gerar client Prisma:
+### 4. Iniciar Desenvolvimento
+```bash
+npm run dev
+```
+
+---
+
+## 🔌 API Endpoints
+
+### 🔐 Health (Público)
+```
+GET /health
+```
+
+### 🔐 Autenticação
+```
+POST /auth/login              # Email + Password
+GET  /auth/me                 # Dados do usuário
+```
+
+### 🔐 Mesas + QR Code
+```
+GET    /mesas/:id/qrcode              # Gera URL de QR + token
+POST   /mesas/:id/abrir-com-token     # Cliente abre mesa
+GET    /mesas/:id/validar-token       # Valida token (sem auth)
+POST   /mesas/:id/fechar-com-evento   # Fecha mesa
+GET    /mesas/:id/comanda-ativa       # Comanda aberta
+GET    /mesas/:id/eventos             # Auditoria de eventos
+```
+
+### 🔐 Comandas (NOVO)
+```
+POST   /comandas                           # Criar comanda
+GET    /comandas/:id                       # Obter por ID
+GET    /comandas/mesa/:mesa_id/ativa       # Ativa da mesa
+POST   /comandas/:comanda_id/produtos      # Adicionar item
+GET    /comandas/:comanda_id/pedidos       # Listar pedidos
+DELETE /comandas/item/:item_id             # Remover item
+POST   /comandas/:comanda_id/finalizar     # Finalizar
+POST   /comandas/:comanda_id/cancelar      # Cancelar
+GET    /comandas/mesa/:mesa_id/historico   # Histórico
+GET    /comandas/ativas/listar             # Mesas em uso
+```
+
+### 🔐 Hardware ESP32 (Sem autenticação)
+```
+GET    /hardware/mesa/:numero/status              # Status compacto
+POST   /hardware/device/register                  # Registrar ESP32
+POST   /hardware/mesa/:mesa_id/evento             # Processar evento
+GET    /hardware/mesa/:mesa_id/eventos            # Listar eventos
+POST   /hardware/device/:mesa_id/unregister       # Desregistrar
+```
+
+### 🔐 Usuarios, Mesas, Produtos, Pedidos, Fornecedores
+```
+POST   /usuarios                # Criar usuário
+GET    /usuarios                # Listar
+GET    /usuarios/:id            # Obter
+PATCH  /usuarios/:id            # Atualizar
+DELETE /usuarios/:id            # Deletar
+# ... similar para /mesas, /produtos, /pedidos, /fornecedores
+```
+
+---
+
+## 🧪 Testes
+
+### Importar Collection
+Abra Bruno/Postman e importe:
+```
+/bruno/collection.json
+```
+
+### Executar Testes Completos
+```bash
+# Começar servidor
+npm run dev
+
+# Em outro terminal
+npm run test
+```
+
+### Guia Completo de Testes
+Veja: `GUIA_TESTES.md` para exemplos detalhados de cada endpoint
+
+---
+
+## 📊 Fluxo Completo
+
+### 1. Gerente gera QR Code
+```bash
+GET /mesas/123/qrcode
+# Retorna URL: http://localhost:3000/m/1?t=abc123...
+```
+
+### 2. Cliente escaneia QR (sem autenticação)
+```bash
+POST /mesas/123/abrir-com-token
+{ "token": "abc123...", "numero": 1 }
+# Comanda criada automaticamente
+```
+
+### 3. Cliente adiciona produtos
+```bash
+POST /comandas/xyz/produtos
+{ "produto_id": "prod-1", "quantidade": 2 }
+```
+
+### 4. Cliente visualiza total
+```bash
+GET /comandas/xyz/pedidos
+# Total calculado automaticamente
+```
+
+### 5. Cliente finaliza pagamento
+```bash
+POST /comandas/xyz/finalizar
+{ "metodo_pagamento": "PIX" }
+```
+
+### 6. Fechar mesa
+```bash
+POST /mesas/123/fechar-com-evento
+{ "tipo": "MESA_FECHADA" }
+# Mesa volta DISPONIVEL
+```
+
+---
+
+## 🔒 Segurança
+
+### Autenticação
+- ✅ JWT do Supabase para operações autenticadas
+- ✅ Tokens de mesa com TTL 360 minutos
+- ✅ Validação de assinatura criptográfica
+- ✅ Session UUID para rastreamento
+
+### Middlewares
+- ✅ `authGuard`: Valida JWT do Supabase
+- ✅ `mesaAcessoGuard`: Valida token de acesso à mesa
+- ✅ `comandaAtivaGuard`: Verifica comanda aberta
+- ✅ Validação Zod para todos os DTOs
+
+### Endpoints Públicos (ESP32)
+- Hardware endpoints **sem autenticação** (ajustar conforme segurança corporativa)
+
+---
+
+## 📝 Scripts NPM
 
 ```bash
-npx prisma generate
+npm run dev           # Desenvolvimento com watch
+npm run build         # Build TypeScript
+npm run start         # Produção
+npm run test          # Testes (se configurado)
+npm run format        # Prettier
+npm run lint          # ESLint
 ```
 
-## Executar projeto
+---
 
-Desenvolvimento:
+## 📚 Documentação Adicional
 
-```bash
-npm run start:dev
-```
+- **[FASE_1_2_3_4_COMPLETA.md](./FASE_1_2_3_4_COMPLETA.md)** - Detalhes de cada fase implementada
+- **[GUIA_TESTES.md](./GUIA_TESTES.md)** - Guia completo de testes com exemplos
+- **[TREE.md](./TREE.md)** - Estrutura visual do projeto
 
-Build:
+---
 
-```bash
-npm run build
-```
+## 🐛 Troubleshooting
 
-Producao:
+### Erro: "Token inválido"
+→ Verificar expiração (360 minutos)
+→ Validar formato da URL de QR
 
-```bash
-npm run start
-```
+### Erro: "Mesa já ocupada"
+→ Fechar mesa anterior
+→ Resetar token no banco
 
-## Base URL
+### Erro: "Comanda não encontrada"
+→ Mesa deve estar aberta primeiro
+→ Verificar mesa_id correto
 
-```text
-http://localhost:3000/api/v1
-```
+---
 
-## Rotas
+## 📄 Licença
 
-Health:
+Projeto de conclusão - FATEC 4º Semestre
 
-- GET /health
+---
 
-Auth:
+**Última Atualização**: Janeiro 2024
+**Status**: ✅ Completo (Fases 1-4)
+**Versão**: 0.0.1
 
-- POST /auth/login
-- GET /auth/me
-
-Usuarios:
-
-- POST /usuarios
-- GET /usuarios
-- GET /usuarios/:id
-- PATCH /usuarios/:id
-- DELETE /usuarios/:id
-
-Mesas:
-
-- POST /mesas
-- GET /mesas
-- GET /mesas/:id
-- PATCH /mesas/:id
-- POST /mesas/:id/abrir
-- POST /mesas/:id/fechar
-
-Produtos:
-
-- POST /produtos
-- GET /produtos
-- GET /produtos/:id
-- PATCH /produtos/:id
-- DELETE /produtos/:id
-
-Fornecedores:
-
-- POST /fornecedores
-- GET /fornecedores
-- GET /fornecedores/:id
-- PATCH /fornecedores/:id
-- DELETE /fornecedores/:id
-
-Pedidos:
-
-- POST /pedidos
-- GET /pedidos
-- GET /pedidos/:id
-- POST /pedidos/:id/itens
-- PATCH /pedidos/:id/status
-- PATCH /pedidos/:id/cancelar
-
-## Testes de API
-
-Voce pode importar a collection JSON:
-
-- bruno/BarRestaurante-API.collection.json
-
-## Observacoes
 
 - O endpoint POST /usuarios cria usuario na base da aplicacao e tenta sincronizar no Supabase Auth.
 - O JWT e retornado no endpoint POST /auth/login (campo data.access_token).
