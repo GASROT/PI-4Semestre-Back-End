@@ -15,9 +15,24 @@ enum Role {
 }
 
 enum StatusMesa {
-  LIVRE
+  DISPONIVEL
   OCUPADA
+  RESERVADA
   MANUTENCAO
+}
+
+enum ComandaStatus {
+  ABERTA
+  FINALIZADA
+  CANCELADA
+}
+
+enum TipoEvento {
+  CHAMAR_GARCOM
+  LIMPEZA_INICIADA
+  LIMPEZA_CONCLUIDA
+  MESA_ABERTA
+  MESA_FECHADA
 }
 
 enum StatusPreparo {
@@ -46,6 +61,8 @@ model Usuario {
   turno         String?
   roles         UsuarioRole[]
   mesas         UsuarioMesa[]
+  comandas      Comanda[]
+  reservas      Reserva[]
   criado_em     DateTime    @default(now())
   atualizado_em DateTime    @updatedAt
 }
@@ -64,14 +81,20 @@ model Mesa {
   id            String       @id @default(uuid()) @db.Uuid
   numero        Int          @unique
   capacidade    Int
-  status        StatusMesa   @default(LIVRE)
+  status        StatusMesa   @default(DISPONIVEL)
   codigo_mesa   Int          @unique
   ativa         Boolean      @default(true)
+  token_acesso  String?      @unique
+  sessao_id     String?      @unique
+  device_id     String?
   aberta_em     DateTime?
   fechada_em    DateTime?
   total         Float        @default(0)
   usuarios      UsuarioMesa[]
-  pedidos       Pedido[]
+  comandas      Comanda[]
+  eventos       EventoMesa[]
+  reservas      Reserva[]
+  pedidos       Pedido[]      // Manter para compatibilidade, mas prefira via Comanda
   criado_em     DateTime     @default(now())
   atualizado_em DateTime     @updatedAt
 }
@@ -91,17 +114,20 @@ model UsuarioMesa {
 model Pedido {
   id               String          @id @default(uuid()) @db.Uuid
   mesa_id          String          @db.Uuid
+  comanda_id       String?         @db.Uuid
   num_pedido       Int             @unique
   data_hora        DateTime        @default(now())
   status_preparo   StatusPreparo   @default(PENDENTE)
   status_pagamento StatusPagamento @default(ABERTO)
   valor_total      Float           @default(0)
   mesa             Mesa            @relation(fields: [mesa_id], references: [id])
+  comanda          Comanda?        @relation(fields: [comanda_id], references: [id], onDelete: SetNull)
   itens            ItemPedido[]
   criado_em        DateTime        @default(now())
   atualizado_em    DateTime        @updatedAt
 
   @@index([mesa_id])
+  @@index([comanda_id])
 }
 
 model ItemPedido {
@@ -154,6 +180,54 @@ model Fornecedor {
   cnpj         String              @unique
   ativo        Boolean             @default(true)
   produtos     ProdutoFornecedor[]
+}
+
+model Comanda {
+  id            String        @id @default(uuid()) @db.Uuid
+  mesa_id       String        @db.Uuid
+  usuario_id    String?       @db.Uuid
+  status        ComandaStatus @default(ABERTA)
+  total         Float         @default(0)
+  criado_em     DateTime      @default(now())
+  finalizado_em DateTime?
+  
+  mesa          Mesa          @relation(fields: [mesa_id], references: [id], onDelete: Cascade)
+  usuario       Usuario?      @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
+  pedidos       Pedido[]
+  
+  @@index([mesa_id])
+  @@index([usuario_id])
+}
+
+model EventoMesa {
+  id            String     @id @default(uuid()) @db.Uuid
+  mesa_id       String     @db.Uuid
+  tipo          TipoEvento
+  descricao     String?
+  device_id     String?
+  criado_em     DateTime   @default(now())
+  
+  mesa          Mesa       @relation(fields: [mesa_id], references: [id], onDelete: Cascade)
+  
+  @@index([mesa_id])
+  @@index([criado_em])
+}
+
+model Reserva {
+  id            String   @id @default(uuid()) @db.Uuid
+  mesa_id       String   @db.Uuid
+  usuario_id    String   @db.Uuid
+  data_reserva  DateTime
+  duracao_min   Int      @default(120)
+  status        String   @default("CONFIRMADA")
+  criado_em     DateTime @default(now())
+  
+  mesa          Mesa     @relation(fields: [mesa_id], references: [id], onDelete: Cascade)
+  usuario       Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  
+  @@index([mesa_id])
+  @@index([usuario_id])
+  @@index([data_reserva])
 }
 
 model ProdutoFornecedor {
