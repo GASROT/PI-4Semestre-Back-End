@@ -51,7 +51,7 @@ export const mesasRepository = {
       return tx.mesa.update({
         where: { id },
         data: {
-          status: 'LIVRE',
+          status: 'DISPONIVEL',
           fechada_em: new Date(),
           total: totals._sum.valor_total ?? 0,
         },
